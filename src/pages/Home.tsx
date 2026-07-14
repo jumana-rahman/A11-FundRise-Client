@@ -2,12 +2,11 @@ import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Autoplay, Pagination, Navigation, EffectFade } from 'swiper/modules'
+import { Autoplay, Pagination, EffectFade } from 'swiper/modules'
 import { FiArrowRight, FiStar, FiUsers, FiTrendingUp, FiShield, FiDollarSign, FiTarget, FiAward } from 'react-icons/fi'
 import { mockCampaigns } from '../data/mockData'
 import 'swiper/css'
 import 'swiper/css/pagination'
-import 'swiper/css/navigation'
 import 'swiper/css/effect-fade'
 
 const heroSlides = [
@@ -100,11 +99,10 @@ export default function Home() {
       {/* Hero Slider */}
       <section style={{ position: 'relative' }}>
         <Swiper
-          modules={[Autoplay, Pagination, Navigation, EffectFade]}
+          modules={[Autoplay, Pagination, EffectFade]}
           effect="fade"
           autoplay={{ delay: 5000, disableOnInteraction: false }}
           pagination={{ clickable: true }}
-          navigation
           loop
           style={{ height: '88vh', minHeight: 500 }}
         >
