@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -112,8 +111,16 @@ export default function Home() {
                 <img src={slide.image} alt={slide.title} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.25)' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #08080fdd 0%, #08080f88 100%)' }} />
                 {/* Geometric accent */}
-                <div style={{ position: 'absolute', top: '15%', right: '8%', width: 300, height: 300, border: '1px solid #00d4aa15', transform: 'rotate(15deg)', borderRadius: 16 }} />
-                <div style={{ position: 'absolute', top: '25%', right: '12%', width: 200, height: 200, border: '1px solid #00d4aa10', transform: 'rotate(30deg)', borderRadius: 12 }} />
+                <motion.div
+                  animate={{ rotate: [15, 25, 15], scale: [1, 1.05, 1] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{ position: 'absolute', top: '15%', right: '8%', width: 300, height: 300, border: '1px solid #00d4aa15', borderRadius: 16 }}
+                />
+                <motion.div
+                  animate={{ rotate: [30, 15, 30], scale: [1, 0.95, 1] }}
+                  transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+                  style={{ position: 'absolute', top: '25%', right: '12%', width: 200, height: 200, border: '1px solid #00d4aa10', borderRadius: 12 }}
+                />
 
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 8%' }}>
                   <motion.div
@@ -149,7 +156,13 @@ export default function Home() {
       </section>
 
       {/* Stats Bar */}
-      <section style={{ background: '#0e0e18', borderTop: '1px solid #1e1e30', borderBottom: '1px solid #1e1e30' }}>
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        style={{ background: '#0e0e18', borderTop: '1px solid #1e1e30', borderBottom: '1px solid #1e1e30' }}
+      >
         <div className="stats-grid" style={{ maxWidth: 1280, margin: '0 auto', padding: '1.5rem' }}>
           {stats.map((s, i) => (
             <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
@@ -160,7 +173,7 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Top Funded Campaigns */}
       <section style={{ maxWidth: 1280, margin: '0 auto', padding: '5rem 1.5rem' }}>
@@ -217,11 +230,11 @@ export default function Home() {
           })}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} style={{ textAlign: 'center', marginTop: '2.5rem' }}>
           <Link to="/explore" className="btn-primary" style={{ textDecoration: 'none', fontSize: '1rem', padding: '0.875rem 2.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
             Explore All Campaigns <FiArrowRight />
           </Link>
-        </div>
+        </motion.div>
       </section>
 
       {/* How It Works */}
@@ -294,7 +307,13 @@ export default function Home() {
           >
             {testimonials.map((t, i) => (
               <SwiperSlide key={i}>
-                <div style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column' }}
+                >
                   <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1.25rem' }}>
                     {Array.from({ length: t.rating }).map((_, j) => (
                       <FiStar key={j} style={{ color: '#ffd93d', fill: '#ffd93d', width: 14, height: 14 }} />
@@ -308,7 +327,7 @@ export default function Home() {
                       <div style={{ fontSize: '0.75rem', color: '#5a5a78' }}>{t.role}</div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </SwiperSlide>
             ))}
           </Swiper>
@@ -320,33 +339,71 @@ export default function Home() {
         <motion.div initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
           style={{ background: 'linear-gradient(135deg, #0e1e1a, #0e1420)', border: '1px solid #00d4aa20', borderRadius: '1.5rem', padding: 'clamp(2.5rem, 5vw, 4rem)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
           {/* Decorative elements */}
-          <div style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, border: '1px solid #00d4aa12', borderRadius: '50%' }} />
-          <div style={{ position: 'absolute', bottom: -40, left: -40, width: 180, height: 180, border: '1px solid #00a8ff10', borderRadius: '50%' }} />
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            style={{ position: 'absolute', top: -60, right: -60, width: 240, height: 240, border: '1px solid #00d4aa12', borderRadius: '50%' }}
+          />
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+            style={{ position: 'absolute', bottom: -40, left: -40, width: 180, height: 180, border: '1px solid #00a8ff10', borderRadius: '50%' }}
+          />
 
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#00d4aa15', border: '1px solid #00d4aa30', color: '#00d4aa', padding: '0.35rem 1rem', borderRadius: 99, fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}>
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#00d4aa15', border: '1px solid #00d4aa30', color: '#00d4aa', padding: '0.35rem 1rem', borderRadius: 99, fontSize: '0.8rem', fontWeight: 600, marginBottom: '1.5rem' }}
+          >
             <FiTrendingUp size={14} /> Platform Impact
-          </span>
-          <h2 style={{ fontFamily: 'Poppins', fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1rem' }}>
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            style={{ fontFamily: 'Poppins', fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1rem' }}
+          >
             Ready to Make Your <span className="gradient-text">Mark?</span>
-          </h2>
-          <p style={{ color: '#7070a0', fontSize: '1.1rem', maxWidth: 520, margin: '0 auto 2rem', lineHeight: 1.7 }}>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            style={{ color: '#7070a0', fontSize: '1.1rem', maxWidth: 520, margin: '0 auto 2rem', lineHeight: 1.7 }}
+          >
             Join 12,400+ supporters and creators already changing the world through the power of community funding.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}
+          >
             <Link to="/register" className="btn-primary" style={{ textDecoration: 'none', fontSize: '1rem', padding: '0.875rem 2.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
               Start Today <FiArrowRight />
             </Link>
             <Link to="/explore" className="btn-outline" style={{ textDecoration: 'none', fontSize: '1rem', padding: '0.875rem 2.5rem' }}>
               Explore Campaigns
             </Link>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '2.5rem', flexWrap: 'wrap' }}>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '2.5rem', flexWrap: 'wrap' }}
+          >
             {[['✅', 'No fees to browse'], ['🔒', 'Secure payments'], ['⚡', '50 free credits on signup']].map(([icon, text]) => (
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#5a5a78', fontSize: '0.85rem' }}>
                 <span>{icon}</span> {text}
               </div>
             ))}
-          </div>
+          </motion.div>
         </motion.div>
       </section>
     </div>
