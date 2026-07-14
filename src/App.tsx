@@ -40,11 +40,11 @@ function DefaultDashboard() {
 
 function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      {children}
+      <div style={{ flex: 1 }}>{children}</div>
       <Footer />
-    </>
+    </div>
   )
 }
 
@@ -53,8 +53,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
       <Route path="/explore" element={<Explore />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+      <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
 
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<DefaultDashboard />} />

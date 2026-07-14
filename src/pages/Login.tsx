@@ -50,7 +50,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#08080f', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ background: '#08080f', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
       {/* Bg decorations */}
       <div style={{ position: 'absolute', top: '10%', left: '5%', width: 400, height: 400, background: 'radial-gradient(circle, #00d4aa08, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 300, height: 300, background: 'radial-gradient(circle, #00a8ff06, transparent 70%)', pointerEvents: 'none' }} />
