@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FiZap, FiCheck, FiStar } from 'react-icons/fi'
+import { FiZap, FiCheck, FiStar, FiLoader, FiCreditCard } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
 import { mockPayments } from '../../../data/mockData'
@@ -33,7 +33,7 @@ export default function PurchaseCredit() {
     updateCredits(pkg.credits)
     setProcessing(false)
     setSelected(null)
-    toast.success(`✨ ${pkg.credits} credits added to your account!`)
+    toast.success(`${pkg.credits} credits added to your account!`)
   }
 
   return (
@@ -105,7 +105,7 @@ export default function PurchaseCredit() {
           </div>
 
           <button onClick={handlePurchase} disabled={processing} className="btn-primary" style={{ width: '100%', padding: '0.875rem', fontSize: '0.95rem', opacity: processing ? 0.7 : 1 }}>
-            {processing ? '⏳ Processing payment…' : `💳 Pay $${packages[selected].price} via Stripe`}
+            {processing ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiLoader size={14} className="animate-spin" /> Processing payment...</span> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiCreditCard size={14} /> Pay ${packages[selected].price} via Stripe</span>}
           </button>
           <p style={{ fontSize: '0.72rem', color: '#3a3a55', textAlign: 'center', marginTop: '0.625rem' }}>Secured by Stripe. Test mode active.</p>
         </motion.div>

@@ -38,7 +38,7 @@ export default function Reports() {
       {openReports.length === 0 ? (
         <div style={{ background: '#111118', border: '1px dashed #2a2a40', borderRadius: '0.875rem', padding: '3rem', textAlign: 'center', color: '#5a5a78' }}>
           <FiFlag size={32} style={{ marginBottom: '0.75rem', opacity: 0.4 }} />
-          <div>No open reports. The platform is clean! 🎉</div>
+          <div>No open reports. The platform is clean!</div>
         </div>
       ) : (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem', marginBottom: '1.75rem' }}>

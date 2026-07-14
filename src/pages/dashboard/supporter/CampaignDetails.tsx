@@ -121,7 +121,7 @@ export default function CampaignDetails() {
               <input type="number" className="form-input" placeholder={`Min. ${campaign.minContribution}`} value={amount} onChange={e => setAmount(e.target.value)} min={campaign.minContribution} max={user?.credits} style={{ marginBottom: '1rem' }} />
 
               <button type="submit" className="btn-primary" disabled={submitting} style={{ width: '100%', padding: '0.875rem', fontSize: '0.9rem' }}>
-                {submitting ? 'Submitting…' : '⚡ Contribute Now'}
+                {submitting ? 'Submitting...' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiZap size={14} /> Contribute Now</span>}
               </button>
             </form>
 

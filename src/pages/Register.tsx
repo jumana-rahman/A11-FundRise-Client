@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiUser, FiMail, FiLock, FiImage, FiEye, FiEyeOff, FiZap, FiCheck } from 'react-icons/fi'
+import { FiUser, FiMail, FiLock, FiImage, FiEye, FiEyeOff, FiZap, FiCheck, FiArrowUp } from 'react-icons/fi'
 import { FcGoogle } from 'react-icons/fc'
 import toast from 'react-hot-toast'
 import { useAuth, type UserRole } from '../context/AuthContext'
@@ -33,7 +33,7 @@ export default function Register() {
     const result = await register(form)
     setLoading(false)
     if (result.success) {
-      toast.success(`Welcome! You received ${form.role === 'supporter' ? 50 : 20} free credits 🎉`)
+      toast.success(`Welcome! You received ${form.role === 'supporter' ? 50 : 20} free credits`)
       navigate('/dashboard')
     } else {
       toast.error(result.error || 'Registration failed')
@@ -83,7 +83,7 @@ export default function Register() {
           {(['supporter', 'creator'] as UserRole[]).map(role => (
             <button key={role} type="button" onClick={() => setForm(p => ({ ...p, role }))}
               style={{ padding: '1rem', border: `2px solid ${form.role === role ? '#00d4aa' : '#1e1e30'}`, borderRadius: '0.75rem', background: form.role === role ? '#00d4aa10' : '#13131e', cursor: 'pointer', transition: 'all 0.2s' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>{role === 'supporter' ? '⚡' : '🚀'}</div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.3rem', display: 'flex', justifyContent: 'center', color: form.role === role ? '#00d4aa' : '#9090b0' }}>{role === 'supporter' ? <FiZap size={24} /> : <FiArrowUp size={24} />}</div>
               <div style={{ fontFamily: 'Poppins', fontWeight: 600, fontSize: '0.875rem', color: form.role === role ? '#00d4aa' : '#9090b0', textTransform: 'capitalize' }}>{role}</div>
               <div style={{ fontSize: '0.7rem', color: '#5a5a78', marginTop: '0.2rem' }}>{role === 'supporter' ? '50 free credits' : '20 free credits'}</div>
             </button>

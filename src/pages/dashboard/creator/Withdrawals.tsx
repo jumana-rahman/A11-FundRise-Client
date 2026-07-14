@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { FiZap, FiDollarSign } from 'react-icons/fi'
+import { FiZap, FiDollarSign, FiAlertTriangle } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
 import { mockCampaigns, mockWithdrawals } from '../../../data/mockData'
@@ -75,8 +75,8 @@ export default function Withdrawals() {
         <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>Request Withdrawal</h3>
 
         {!canWithdraw ? (
-          <div style={{ background: '#ff6b6b10', border: '1px solid #ff6b6b25', borderRadius: '0.625rem', padding: '1rem', color: '#ff6b6b', fontSize: '0.875rem' }}>
-            ⚠️ You need at least <strong>{MIN_CREDITS} credits</strong> to make a withdrawal. Current balance: {availableCredits} credits.
+          <div style={{ background: '#ff6b6b10', border: '1px solid #ff6b6b25', borderRadius: '0.625rem', padding: '1rem', color: '#ff6b6b', fontSize: '0.875rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+            <FiAlertTriangle size={16} style={{ marginTop: '0.15rem', flexShrink: 0 }} /> <span>You need at least <strong>{MIN_CREDITS} credits</strong> to make a withdrawal. Current balance: {availableCredits} credits.</span>
           </div>
         ) : (
           <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

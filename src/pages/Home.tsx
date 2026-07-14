@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules'
-import { FiArrowRight, FiStar, FiUsers, FiTrendingUp, FiShield, FiDollarSign, FiTarget, FiAward } from 'react-icons/fi'
+import { FiArrowRight, FiStar, FiUsers, FiTrendingUp, FiShield, FiDollarSign, FiTarget, FiAward, FiZap, FiPenTool, FiHeart, FiBook, FiGlobe, FiUser, FiSearch, FiCheckCircle, FiLock } from 'react-icons/fi'
 import { mockCampaigns } from '../data/mockData'
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -67,12 +67,12 @@ const testimonials = [
 ]
 
 const categories = [
-  { name: 'Technology', count: 284, icon: '⚡', color: '#00d4aa' },
-  { name: 'Art & Design', count: 197, icon: '🎨', color: '#a78bfa' },
-  { name: 'Community', count: 341, icon: '🌱', color: '#34d399' },
-  { name: 'Health', count: 156, icon: '💙', color: '#60a5fa' },
-  { name: 'Education', count: 223, icon: '📚', color: '#fbbf24' },
-  { name: 'Environment', count: 118, icon: '🌍', color: '#4ade80' },
+  { name: 'Technology', count: 284, icon: <FiZap />, color: '#00d4aa' },
+  { name: 'Art & Design', count: 197, icon: <FiPenTool />, color: '#a78bfa' },
+  { name: 'Community', count: 341, icon: <FiHeart />, color: '#34d399' },
+  { name: 'Health', count: 156, icon: <FiHeart />, color: '#60a5fa' },
+  { name: 'Education', count: 223, icon: <FiBook />, color: '#fbbf24' },
+  { name: 'Environment', count: 118, icon: <FiGlobe />, color: '#4ade80' },
 ]
 
 const stats = [
@@ -200,7 +200,7 @@ export default function Home() {
                   <span style={{ position: 'absolute', top: 12, left: 12, background: '#00d4aa20', border: '1px solid #00d4aa40', color: '#00d4aa', padding: '0.2rem 0.6rem', borderRadius: 99, fontSize: '0.7rem', fontWeight: 600 }}>
                     {c.category}
                   </span>
-                  {i === 0 && <span style={{ position: 'absolute', top: 12, right: 12, background: 'linear-gradient(135deg, #ffd93d, #ff8c00)', color: '#08080f', padding: '0.2rem 0.6rem', borderRadius: 99, fontSize: '0.7rem', fontWeight: 700 }}>🏆 Top Funded</span>}
+                  {i === 0 && <span style={{ position: 'absolute', top: 12, right: 12, background: 'linear-gradient(135deg, #ffd93d, #ff8c00)', color: '#08080f', padding: '0.2rem 0.6rem', borderRadius: 99, fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}><FiAward size={10} /> Top Funded</span>}
                 </div>
                 <div style={{ padding: '1.25rem' }}>
                   <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1rem', marginBottom: '0.375rem', lineHeight: 1.4 }}>{c.title}</h3>
@@ -247,10 +247,10 @@ export default function Home() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2rem' }}>
             {[
-              { step: '01', title: 'Create an Account', desc: 'Register as a Supporter or Creator in seconds. No credit card required to get started.', icon: '👤', color: '#00d4aa' },
-              { step: '02', title: 'Discover Campaigns', desc: 'Browse hundreds of vetted campaigns across tech, art, health, and community categories.', icon: '🔍', color: '#a78bfa' },
-              { step: '03', title: 'Contribute Credits', desc: 'Purchase credits and back the projects that excite you. Minimum contributions start low.', icon: '⚡', color: '#60a5fa' },
-              { step: '04', title: 'Watch It Grow', desc: 'Track your contributions, receive updates from creators, and see your impact in real time.', icon: '📈', color: '#34d399' },
+              { step: '01', title: 'Create an Account', desc: 'Register as a Supporter or Creator in seconds. No credit card required to get started.', icon: <FiUser size={28} />, color: '#00d4aa' },
+              { step: '02', title: 'Discover Campaigns', desc: 'Browse hundreds of vetted campaigns across tech, art, health, and community categories.', icon: <FiSearch size={28} />, color: '#a78bfa' },
+              { step: '03', title: 'Contribute Credits', desc: 'Purchase credits and back the projects that excite you. Minimum contributions start low.', icon: <FiZap size={28} />, color: '#60a5fa' },
+              { step: '04', title: 'Watch It Grow', desc: 'Track your contributions, receive updates from creators, and see your impact in real time.', icon: <FiTrendingUp size={28} />, color: '#34d399' },
             ].map((step, i) => (
               <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                 style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '2rem', position: 'relative', overflow: 'hidden' }}>
@@ -398,9 +398,13 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.5 }}
             style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '2.5rem', flexWrap: 'wrap' }}
           >
-            {[['✅', 'No fees to browse'], ['🔒', 'Secure payments'], ['⚡', '50 free credits on signup']].map(([icon, text]) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#5a5a78', fontSize: '0.85rem' }}>
-                <span>{icon}</span> {text}
+            {[
+              { icon: <FiCheckCircle size={14} />, text: 'No fees to browse' },
+              { icon: <FiLock size={14} />, text: 'Secure payments' },
+              { icon: <FiZap size={14} />, text: '50 free credits on signup' },
+            ].map((item) => (
+              <div key={item.text} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#5a5a78', fontSize: '0.85rem' }}>
+                <span style={{ color: '#00d4aa' }}>{item.icon}</span> {item.text}
               </div>
             ))}
           </motion.div>

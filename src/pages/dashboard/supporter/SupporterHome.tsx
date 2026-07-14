@@ -27,7 +27,7 @@ export default function SupporterHome() {
     <div>
       <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
         <h1 style={{ fontFamily: 'Poppins', fontWeight: 800, fontSize: '1.5rem', marginBottom: '0.375rem' }}>
-          Welcome back, {user?.name?.split(' ')[0]} 👋
+          Welcome back, {user?.name?.split(' ')[0]}
         </h1>
         <p style={{ color: '#6060a0', fontSize: '0.875rem', marginBottom: '1.75rem' }}>Here's your contribution overview.</p>
       </motion.div>
