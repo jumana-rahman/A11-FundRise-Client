@@ -150,7 +150,7 @@ export default function Home() {
 
       {/* Stats Bar */}
       <section style={{ background: '#0e0e18', borderTop: '1px solid #1e1e30', borderBottom: '1px solid #1e1e30' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+        <div className="stats-grid" style={{ maxWidth: 1280, margin: '0 auto', padding: '1.5rem' }}>
           {stats.map((s, i) => (
             <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
               style={{ textAlign: 'center', padding: '1rem' }}>

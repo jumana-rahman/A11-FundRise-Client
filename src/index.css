@@ -114,6 +114,18 @@ h1, h2, h3, h4, h5, h6 {
   transition: width 1s ease;
 }
 
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 /* Dashboard sidebar */
 .sidebar-link {
   display: flex;
