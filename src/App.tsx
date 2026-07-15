@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import BackToTop from './components/BackToTop'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -44,6 +45,7 @@ function PublicLayout({ children }: { children: React.ReactNode }) {
       <Navbar />
       <div style={{ flex: 1 }}>{children}</div>
       <Footer />
+      <BackToTop />
     </div>
   )
 }
