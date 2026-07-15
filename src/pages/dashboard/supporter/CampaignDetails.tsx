@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiCalendar, FiTarget, FiZap, FiUser, FiArrowLeft, FiGift } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
-import { mockCampaigns, mockContributions } from '../../../data/mockData'
+import { api } from '../../../lib/api'
 
 export default function CampaignDetails() {
   const { id } = useParams()
@@ -12,8 +12,17 @@ export default function CampaignDetails() {
   const { user, updateCredits } = useAuth()
   const [amount, setAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [campaign, setCampaign] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  const campaign = mockCampaigns.find(c => c.id === id)
+  useEffect(() => {
+    if (!id) return
+    api.get<any>(`/api/campaigns/${id}`)
+      .then(res => { setCampaign(res); setLoading(false) })
+      .catch(() => { setLoading(false) })
+  }, [id])
+
+  if (loading) return <div style={{ color: '#6060a0', padding: '2rem' }}>Loading campaign...</div>
   if (!campaign) return <div style={{ color: '#ff6b6b', padding: '2rem' }}>Campaign not found.</div>
 
   const pct = Math.min(100, Math.round((campaign.amountRaised / campaign.fundingGoal) * 100))
@@ -22,8 +31,8 @@ export default function CampaignDetails() {
   const handleContribute = async (e: React.FormEvent) => {
     e.preventDefault()
     const num = parseInt(amount)
-    if (!num || num < campaign.minContribution) {
-      toast.error(`Minimum contribution is ${campaign.minContribution} credits`)
+    if (!num || num < campaign.minimumContribution) {
+      toast.error(`Minimum contribution is ${campaign.minimumContribution} credits`)
       return
     }
     if ((user?.credits ?? 0) < num) {
@@ -31,24 +40,21 @@ export default function CampaignDetails() {
       return
     }
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 800))
-    const contribution = {
-      id: `contrib_${Date.now()}`,
-      campaignId: campaign.id,
-      campaignTitle: campaign.title,
-      contributionAmount: num,
-      supporterEmail: user!.email,
-      supporterName: user!.name,
-      creatorName: campaign.creatorName,
-      creatorEmail: campaign.creatorEmail,
-      currentDate: new Date().toISOString().split('T')[0],
-      status: 'pending' as const,
+    try {
+      await api.post('/api/contributions', {
+        campaignId: campaign._id,
+        campaignTitle: campaign.campaignTitle,
+        contributionAmount: num,
+        creatorEmail: campaign.creatorEmail,
+        creatorName: campaign.creatorName,
+      })
+      updateCredits(-num)
+      setAmount('')
+      toast.success(`Contributed ${num} credits! Awaiting creator approval.`)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to contribute')
     }
-    mockContributions.push(contribution)
-    updateCredits(-num)
     setSubmitting(false)
-    setAmount('')
-    toast.success(`Contributed ${num} credits! Awaiting creator approval.`)
   }
 
   return (
@@ -58,15 +64,14 @@ export default function CampaignDetails() {
       </button>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
-        {/* Left - Campaign info */}
         <div>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <div style={{ borderRadius: '1rem', overflow: 'hidden', marginBottom: '1.5rem', position: 'relative' }}>
-              <img src={campaign.imageUrl} alt={campaign.title} style={{ width: '100%', height: 320, objectFit: 'cover' }} />
+              <img src={campaign.campaignImageUrl} alt={campaign.campaignTitle} style={{ width: '100%', height: 320, objectFit: 'cover' }} />
               <span style={{ position: 'absolute', top: 12, left: 12, background: '#00d4aa18', border: '1px solid #00d4aa40', color: '#00d4aa', padding: '0.25rem 0.75rem', borderRadius: 99, fontSize: '0.75rem', fontWeight: 600 }}>{campaign.category}</span>
             </div>
 
-            <h1 style={{ fontFamily: 'Poppins', fontWeight: 800, fontSize: '1.75rem', marginBottom: '0.5rem', lineHeight: 1.3 }}>{campaign.title}</h1>
+            <h1 style={{ fontFamily: 'Poppins', fontWeight: 800, fontSize: '1.75rem', marginBottom: '0.5rem', lineHeight: 1.3 }}>{campaign.campaignTitle}</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#7070a0', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
               <FiUser size={14} /> by {campaign.creatorName}
             </div>
@@ -90,7 +95,7 @@ export default function CampaignDetails() {
 
             <div style={{ marginBottom: '1.5rem' }}>
               <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.75rem' }}>About This Campaign</h3>
-              <p style={{ color: '#9090b0', lineHeight: 1.8, fontSize: '0.9rem' }}>{campaign.story}</p>
+              <p style={{ color: '#9090b0', lineHeight: 1.8, fontSize: '0.9rem' }}>{campaign.campaignStory}</p>
             </div>
 
             <div style={{ background: '#13131e', border: '1px solid #1e1e30', borderRadius: '0.75rem', padding: '1.125rem' }}>
@@ -102,11 +107,10 @@ export default function CampaignDetails() {
           </motion.div>
         </div>
 
-        {/* Right - Contribution form */}
         <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
           <div style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '1.5rem', position: 'sticky', top: 80 }}>
             <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1.1rem', marginBottom: '0.375rem' }}>Back This Campaign</h3>
-            <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '1.25rem' }}>Minimum contribution: <span style={{ color: '#00d4aa', fontFamily: 'JetBrains Mono' }}>{campaign.minContribution}</span> credits</p>
+            <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '1.25rem' }}>Minimum contribution: <span style={{ color: '#00d4aa', fontFamily: 'JetBrains Mono' }}>{campaign.minimumContribution}</span> credits</p>
 
             <div style={{ background: '#0e0e18', borderRadius: '0.625rem', padding: '0.875rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: '#6060a0', fontSize: '0.8rem' }}>Your balance</span>
@@ -118,8 +122,7 @@ export default function CampaignDetails() {
 
             <form onSubmit={handleContribute}>
               <label className="form-label">Contribution Amount (credits)</label>
-              <input type="number" className="form-input" placeholder={`Min. ${campaign.minContribution}`} value={amount} onChange={e => setAmount(e.target.value)} min={campaign.minContribution} max={user?.credits} style={{ marginBottom: '1rem' }} />
-
+              <input type="number" className="form-input" placeholder={`Min. ${campaign.minimumContribution}`} value={amount} onChange={e => setAmount(e.target.value)} min={campaign.minimumContribution} max={user?.credits} style={{ marginBottom: '1rem' }} />
               <button type="submit" className="btn-primary" disabled={submitting} style={{ width: '100%', padding: '0.875rem', fontSize: '0.9rem' }}>
                 {submitting ? 'Submitting...' : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiZap size={14} /> Contribute Now</span>}
               </button>

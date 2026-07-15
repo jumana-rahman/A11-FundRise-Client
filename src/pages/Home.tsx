@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules'
-import { FiArrowRight, FiStar, FiUsers, FiTrendingUp, FiShield, FiDollarSign, FiTarget, FiAward, FiZap, FiPenTool, FiHeart, FiBook, FiGlobe, FiUser, FiSearch, FiCheckCircle, FiLock } from 'react-icons/fi'
-import { mockCampaigns } from '../data/mockData'
+import { FiArrowRight, FiStar, FiUsers, FiTrendingUp, FiDollarSign, FiTarget, FiAward, FiZap, FiPenTool, FiHeart, FiBook, FiGlobe, FiUser, FiSearch, FiCheckCircle, FiLock } from 'react-icons/fi'
+import { api } from '../lib/api'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/effect-fade'
@@ -88,10 +89,13 @@ const fadeUp = {
 }
 
 export default function Home() {
-  const topCampaigns = [...mockCampaigns]
-    .filter(c => c.status === 'approved')
-    .sort((a, b) => b.amountRaised - a.amountRaised)
-    .slice(0, 6)
+  const [topCampaigns, setTopCampaigns] = useState<any[]>([])
+
+  useEffect(() => {
+    api.get<any[]>('/api/campaigns/top')
+      .then(res => setTopCampaigns(Array.isArray(res) ? res.slice(0, 6) : []))
+      .catch(() => {})
+  }, [])
 
   return (
     <div style={{ background: '#08080f', minHeight: '100vh' }}>
@@ -190,9 +194,9 @@ export default function Home() {
             const pct = Math.min(100, Math.round((c.amountRaised / c.fundingGoal) * 100))
             const daysLeft = Math.max(0, Math.ceil((new Date(c.deadline).getTime() - Date.now()) / 86400000))
             return (
-              <motion.div key={c.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="campaign-card card-glow">
+              <motion.div key={c._id || i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="campaign-card card-glow">
                 <div style={{ position: 'relative', overflow: 'hidden', height: 200 }}>
-                  <img src={c.imageUrl} alt={c.title} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }}
+                  <img src={c.imageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&h=400&fit=crop'} alt={c.campaignTitle} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }}
                     onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
                     onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                   />
@@ -203,7 +207,7 @@ export default function Home() {
                   {i === 0 && <span style={{ position: 'absolute', top: 12, right: 12, background: 'linear-gradient(135deg, #ffd93d, #ff8c00)', color: '#08080f', padding: '0.2rem 0.6rem', borderRadius: 99, fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}><FiAward size={10} /> Top Funded</span>}
                 </div>
                 <div style={{ padding: '1.25rem' }}>
-                  <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1rem', marginBottom: '0.375rem', lineHeight: 1.4 }}>{c.title}</h3>
+                  <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1rem', marginBottom: '0.375rem', lineHeight: 1.4 }}>{c.campaignTitle}</h3>
                   <p style={{ color: '#7070a0', fontSize: '0.8rem', marginBottom: '1rem' }}>by {c.creatorName}</p>
 
                   <div className="progress-bar" style={{ marginBottom: '0.625rem' }}>
@@ -221,7 +225,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <Link to={`/explore/${c.id}`} className="btn-outline" style={{ textDecoration: 'none', display: 'block', textAlign: 'center', width: '100%' }}>
+                  <Link to={`/explore/${c._id}`} className="btn-outline" style={{ textDecoration: 'none', display: 'block', textAlign: 'center', width: '100%' }}>
                     View Campaign
                   </Link>
                 </div>

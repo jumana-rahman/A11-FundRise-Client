@@ -1,19 +1,28 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { useAuth } from '../../../context/AuthContext'
-import { mockContributions } from '../../../data/mockData'
+import { api } from '../../../lib/api'
 
 const PAGE_SIZE = 5
 
 export default function MyContributions() {
-  const { user } = useAuth()
+  const [contributions, setContributions] = useState<any[]>([])
+  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(true)
 
-  const all = mockContributions.filter(c => c.supporterEmail === user?.email)
-  const total = all.length
-  const totalPages = Math.ceil(total / PAGE_SIZE)
-  const paginated = all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  useEffect(() => {
+    setLoading(true)
+    api.get<any>(`/api/contributions/mine?page=${page}&limit=${PAGE_SIZE}`)
+      .then(res => {
+        setContributions(res.contributions || [])
+        setTotal(res.total || 0)
+        setTotalPages(res.totalPages || 1)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [page])
 
   return (
     <div>
@@ -22,7 +31,9 @@ export default function MyContributions() {
         <p style={{ color: '#6060a0', fontSize: '0.875rem' }}>{total} total contributions across all campaigns.</p>
       </div>
 
-      {total === 0 ? (
+      {loading ? (
+        <div style={{ background: '#111118', border: '1px dashed #2a2a40', borderRadius: '0.875rem', padding: '3rem', textAlign: 'center', color: '#5a5a78' }}>Loading...</div>
+      ) : total === 0 ? (
         <div style={{ background: '#111118', border: '1px dashed #2a2a40', borderRadius: '0.875rem', padding: '3rem', textAlign: 'center', color: '#5a5a78' }}>
           You haven't made any contributions yet.
         </div>
@@ -42,15 +53,15 @@ export default function MyContributions() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map((c, i) => (
-                    <tr key={c.id}>
+                  {contributions.map((c: any, i: number) => (
+                    <tr key={c._id}>
                       <td style={{ color: '#3a3a55', fontFamily: 'JetBrains Mono', fontSize: '0.75rem' }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
                       <td style={{ fontWeight: 500, color: '#e8e8f0', maxWidth: 240 }}>
                         <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>{c.campaignTitle}</div>
                       </td>
                       <td style={{ color: '#9090b0' }}>{c.creatorName}</td>
                       <td><span style={{ fontFamily: 'JetBrains Mono', color: '#00d4aa', fontWeight: 600 }}>{c.contributionAmount}</span></td>
-                      <td style={{ color: '#6060a0', fontFamily: 'JetBrains Mono', fontSize: '0.78rem' }}>{c.currentDate}</td>
+                      <td style={{ color: '#6060a0', fontFamily: 'JetBrains Mono', fontSize: '0.78rem' }}>{new Date(c.currentDate).toLocaleDateString()}</td>
                       <td><span className={`badge badge-${c.status}`}>{c.status}</span></td>
                     </tr>
                   ))}
@@ -59,7 +70,6 @@ export default function MyContributions() {
             </div>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '1.25rem' }}>
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}

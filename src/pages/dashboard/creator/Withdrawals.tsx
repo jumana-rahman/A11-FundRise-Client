@@ -1,118 +1,106 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiZap, FiDollarSign, FiAlertTriangle } from 'react-icons/fi'
+import { FiDollarSign, FiZap } from 'react-icons/fi'
 import toast from 'react-hot-toast'
-import { useAuth } from '../../../context/AuthContext'
-import { mockCampaigns, mockWithdrawals } from '../../../data/mockData'
-
-const MIN_CREDITS = 200
+import { api } from '../../../lib/api'
 
 export default function Withdrawals() {
-  const { user } = useAuth()
-  const myCampaigns = mockCampaigns.filter(c => c.creatorEmail === user?.email)
-  const totalRaised = myCampaigns.reduce((s, c) => s + c.amountRaised, 0)
-  const alreadyWithdrawn = mockWithdrawals.filter(w => w.creatorEmail === user?.email && w.status === 'approved').reduce((s, w) => s + w.withdrawalCredit, 0)
-  const availableCredits = Math.max(0, totalRaised - alreadyWithdrawn)
-  const dollarValue = (availableCredits / 20).toFixed(2)
-
-  const [credits, setCredits] = useState('')
-  const [paymentSystem, setPaymentSystem] = useState('Stripe')
-  const [accountNumber, setAccountNumber] = useState('')
+  const [earnings, setEarnings] = useState({ totalRaised: 0, withdrawalAmount: 0 })
+  const [form, setForm] = useState({ withdrawalCredit: '', paymentSystem: 'Stripe', accountNumber: '' })
   const [loading, setLoading] = useState(false)
 
-  const withdrawAmount = credits ? (parseInt(credits) / 20).toFixed(2) : '0.00'
-  const canWithdraw = availableCredits >= MIN_CREDITS
+  useEffect(() => {
+    api.get<any>('/api/withdrawals/earnings')
+      .then(res => setEarnings(res))
+      .catch(() => {})
+  }, [])
+
+  const creditAmount = parseInt(form.withdrawalCredit) || 0
+  const dollarAmount = creditAmount / 20
+  const canWithdraw = creditAmount >= 200 && creditAmount <= earnings.totalRaised
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault()
-    const num = parseInt(credits)
-    if (!num || num < MIN_CREDITS) { toast.error(`Minimum withdrawal is ${MIN_CREDITS} credits`); return }
-    if (num > availableCredits) { toast.error('Amount exceeds available credits'); return }
-    if (!accountNumber) { toast.error('Account number is required'); return }
+    if (!canWithdraw) return
     setLoading(true)
-    await new Promise(r => setTimeout(r, 800))
-    mockWithdrawals.push({
-      id: `w_${Date.now()}`,
-      creatorEmail: user!.email,
-      creatorName: user!.name,
-      withdrawalCredit: num,
-      withdrawalAmount: num / 20,
-      paymentSystem,
-      accountNumber,
-      withdrawDate: new Date().toISOString().split('T')[0],
-      status: 'pending',
-    })
+    try {
+      await api.post('/api/withdrawals', {
+        withdrawalCredit: creditAmount,
+        paymentSystem: form.paymentSystem,
+        accountNumber: form.accountNumber,
+      })
+      toast.success('Withdrawal request submitted!')
+      setForm({ withdrawalCredit: '', paymentSystem: 'Stripe', accountNumber: '' })
+      api.get<any>('/api/withdrawals/earnings').then(res => setEarnings(res))
+    } catch (err: any) {
+      toast.error(err.message || 'Failed')
+    }
     setLoading(false)
-    setCredits('')
-    setAccountNumber('')
-    toast.success('Withdrawal request submitted!')
   }
 
   return (
     <div>
       <div style={{ marginBottom: '1.75rem' }}>
         <h1 style={{ fontFamily: 'Poppins', fontWeight: 800, fontSize: '1.5rem', marginBottom: '0.375rem' }}>Withdrawals</h1>
-        <p style={{ color: '#6060a0', fontSize: '0.875rem' }}>20 credits = $1. Minimum withdrawal: {MIN_CREDITS} credits ($10).</p>
+        <p style={{ color: '#6060a0', fontSize: '0.875rem' }}>Request withdrawals for your raised credits. 20 credits = $1</p>
       </div>
 
-      {/* Earnings summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        {[
-          { label: 'Total Credits Raised', value: totalRaised.toLocaleString(), suffix: ' cr', color: '#00d4aa' },
-          { label: 'Available to Withdraw', value: availableCredits.toLocaleString(), suffix: ' cr', color: '#a78bfa' },
-          { label: 'Withdrawal Value', value: `$${dollarValue}`, suffix: '', color: '#ffd93d' },
-        ].map((s, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} className="stat-card">
-            <div style={{ fontFamily: 'JetBrains Mono', fontWeight: 700, fontSize: '1.75rem', color: s.color }}>{s.value}{s.suffix}</div>
-            <div style={{ fontSize: '0.8rem', color: '#6060a0', marginTop: '0.25rem' }}>{s.label}</div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Withdrawal form */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '1.75rem', maxWidth: 520 }}>
-        <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>Request Withdrawal</h3>
-
-        {!canWithdraw ? (
-          <div style={{ background: '#ff6b6b10', border: '1px solid #ff6b6b25', borderRadius: '0.625rem', padding: '1rem', color: '#ff6b6b', fontSize: '0.875rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-            <FiAlertTriangle size={16} style={{ marginTop: '0.15rem', flexShrink: 0 }} /> <span>You need at least <strong>{MIN_CREDITS} credits</strong> to make a withdrawal. Current balance: {availableCredits} credits.</span>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        style={{ background: 'linear-gradient(135deg, #0e1e1a, #0a1420)', border: '1px solid #00d4aa20', borderRadius: '1rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Total Raised</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiZap size={24} style={{ color: '#ffd93d' }} />
+            <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 800, fontSize: '2rem', color: '#ffd93d' }}>{earnings.totalRaised.toLocaleString()}</span>
+            <span style={{ color: '#5a5a78' }}>credits</span>
           </div>
-        ) : (
-          <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label className="form-label">Credits to Withdraw</label>
-              <div style={{ position: 'relative' }}>
-                <FiZap style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#4a4a65' }} size={16} />
-                <input type="number" className="form-input" style={{ paddingLeft: '2.5rem' }} placeholder={`Min ${MIN_CREDITS}`} value={credits}
-                  onChange={e => setCredits(e.target.value)} min={MIN_CREDITS} max={availableCredits} />
-              </div>
-            </div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Available for Withdrawal</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiDollarSign size={24} style={{ color: '#00d4aa' }} />
+            <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 800, fontSize: '2rem', color: '#00d4aa' }}>${earnings.withdrawalAmount.toFixed(2)}</span>
+          </div>
+        </div>
+      </motion.div>
 
-            <div style={{ background: '#0e0e18', border: '1px solid #2a2a40', borderRadius: '0.5rem', padding: '0.875rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: '#6060a0', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <FiDollarSign size={14} /> Withdrawal Amount
-              </span>
-              <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 800, color: '#ffd93d', fontSize: '1.25rem' }}>${withdrawAmount}</span>
-            </div>
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+        style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '1.5rem', maxWidth: 520 }}>
+        <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>Request Withdrawal</h3>
 
-            <div>
-              <label className="form-label">Payment Method</label>
-              <select className="form-input" value={paymentSystem} onChange={e => setPaymentSystem(e.target.value)}>
-                {['Stripe', 'Bkash', 'Rocket', 'Nagad', 'PayPal'].map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
+        <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label className="form-label">Credits to Withdraw</label>
+            <input type="number" className="form-input" placeholder="Min. 200" value={form.withdrawalCredit} onChange={e => setForm(p => ({ ...p, withdrawalCredit: e.target.value }))} min={200} max={earnings.totalRaised} />
+          </div>
 
-            <div>
-              <label className="form-label">Account Number / Email</label>
-              <input type="text" className="form-input" placeholder="e.g. ****4242 or you@example.com" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} />
-            </div>
+          <div>
+            <label className="form-label">Withdraw Amount ($)</label>
+            <input type="text" className="form-input" value={`$${dollarAmount.toFixed(2)}`} readOnly style={{ opacity: 0.7 }} />
+          </div>
 
-            <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '0.875rem', fontSize: '0.9rem', opacity: loading ? 0.7 : 1 }}>
-              {loading ? 'Submitting…' : `Withdraw $${withdrawAmount}`}
+          <div>
+            <label className="form-label">Payment System</label>
+            <select className="form-input" value={form.paymentSystem} onChange={e => setForm(p => ({ ...p, paymentSystem: e.target.value }))}>
+              {['Stripe', 'Bkash', 'Rocket', 'Nagad', 'Bank Transfer'].map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="form-label">Account Number</label>
+            <input className="form-input" placeholder="Your account number" value={form.accountNumber} onChange={e => setForm(p => ({ ...p, accountNumber: e.target.value }))} />
+          </div>
+
+          {canWithdraw ? (
+            <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '0.875rem', fontSize: '0.95rem' }}>
+              {loading ? 'Processing...' : 'Withdraw'}
             </button>
-          </form>
-        )}
+          ) : (
+            <div style={{ textAlign: 'center', padding: '0.875rem', background: '#ff6b6b10', border: '1px solid #ff6b6b30', borderRadius: '0.625rem', color: '#ff6b6b', fontSize: '0.875rem', fontWeight: 600 }}>
+              Insufficient credit
+            </div>
+          )}
+        </form>
       </motion.div>
     </div>
   )

@@ -3,8 +3,8 @@ import { NavLink, Link, useNavigate, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FiHome, FiCompass, FiList, FiShoppingCart, FiCreditCard, FiLogOut,
-  FiPlusCircle, FiUsers, FiFlag, FiZap, FiBell, FiChevronDown,
-  FiMenu, FiX, FiDownload, FiCheckSquare, FiDollarSign,
+  FiPlusCircle, FiUsers, FiFlag, FiZap, FiBell,
+  FiMenu, FiDownload, FiCheckSquare, FiDollarSign,
 } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'

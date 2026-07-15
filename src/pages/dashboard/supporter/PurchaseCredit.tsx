@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { FiZap, FiCheck, FiStar, FiLoader, FiCreditCard } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
-import { mockPayments } from '../../../data/mockData'
+import { api } from '../../../lib/api'
 
 const packages = [
   { credits: 100, price: 10, label: 'Starter', popular: false, color: '#60a5fa' },
@@ -21,19 +21,16 @@ export default function PurchaseCredit() {
     if (selected === null) { toast.error('Select a package first'); return }
     const pkg = packages[selected]
     setProcessing(true)
-    await new Promise(r => setTimeout(r, 1500))
-    mockPayments.push({
-      id: `pay_${Date.now()}`,
-      userEmail: user!.email,
-      credits: pkg.credits,
-      amount: pkg.price,
-      date: new Date().toISOString().split('T')[0],
-      method: 'Stripe',
-    })
-    updateCredits(pkg.credits)
+    try {
+      await api.post('/api/users/credits', { amount: pkg.credits })
+      await api.post('/api/payments', { credits: pkg.credits, amount: pkg.price, method: 'Stripe' })
+      updateCredits(pkg.credits)
+      toast.success(`${pkg.credits} credits added to your account!`)
+      setSelected(null)
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to purchase credits')
+    }
     setProcessing(false)
-    setSelected(null)
-    toast.success(`${pkg.credits} credits added to your account!`)
   }
 
   return (
@@ -43,7 +40,6 @@ export default function PurchaseCredit() {
         <p style={{ color: '#6060a0', fontSize: '0.875rem' }}>Credits are used to back campaigns. 10 credits = $1</p>
       </div>
 
-      {/* Current balance */}
       <div style={{ background: 'linear-gradient(135deg, #0e1e1a, #0a1420)', border: '1px solid #00d4aa20', borderRadius: '1rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Your current balance</p>
@@ -54,11 +50,10 @@ export default function PurchaseCredit() {
           </div>
         </div>
         <div style={{ textAlign: 'right', color: '#5a5a78', fontSize: '0.8rem' }}>
-          <div>≈ ${((user?.credits ?? 0) / 10).toFixed(2)} value</div>
+          <div>~ ${((user?.credits ?? 0) / 10).toFixed(2)} value</div>
         </div>
       </div>
 
-      {/* Packages */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
         {packages.map((pkg, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
@@ -87,12 +82,11 @@ export default function PurchaseCredit() {
         ))}
       </div>
 
-      {/* Payment section */}
       {selected !== null && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '1.5rem', maxWidth: 480 }}>
           <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>
-            Complete Purchase — {packages[selected].credits} credits for ${packages[selected].price}
+            Complete Purchase - {packages[selected].credits} credits for ${packages[selected].price}
           </h3>
 
           <div style={{ background: '#0a0a12', border: '1px solid #2a2a40', borderRadius: '0.625rem', padding: '1rem', marginBottom: '1.25rem' }}>
