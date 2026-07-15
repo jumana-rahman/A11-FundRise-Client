@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiImage, FiArrowRight } from 'react-icons/fi'
+import { FiArrowRight } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
 import { api } from '../../../lib/api'
+import ImageUpload from '../../../components/ImageUpload'
 
 export default function AddCampaign() {
   const { } = useAuth()
@@ -110,11 +111,8 @@ export default function AddCampaign() {
           </div>
 
           <div style={{ gridColumn: '1 / -1' }}>
-            <label className="form-label">Campaign Image URL <span style={{ color: '#3a3a55', textTransform: 'none' }}>(optional)</span></label>
-            <div style={{ position: 'relative' }}>
-              <FiImage style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#4a4a65' }} size={16} />
-              <input type="url" className="form-input" style={{ paddingLeft: '2.5rem' }} placeholder="https://images.unsplash.com/..." value={form.campaignImageUrl} onChange={set('campaignImageUrl')} />
-            </div>
+            <label className="form-label">Campaign Image <span style={{ color: '#3a3a55', textTransform: 'none' }}>(optional)</span></label>
+            <ImageUpload value={form.campaignImageUrl} onChange={url => setForm(p => ({ ...p, campaignImageUrl: url }))} />
           </div>
 
           <div style={{ gridColumn: '1 / -1' }}>

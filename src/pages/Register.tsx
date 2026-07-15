@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiUser, FiMail, FiLock, FiImage, FiEye, FiEyeOff, FiZap, FiCheck, FiArrowUp } from 'react-icons/fi'
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiZap, FiCheck, FiArrowUp } from 'react-icons/fi'
 import { FcGoogle } from 'react-icons/fc'
 import toast from 'react-hot-toast'
 import { useAuth, type UserRole } from '../context/AuthContext'
+import ImageUpload from '../components/ImageUpload'
 
 export default function Register() {
   const { register, loginWithGoogle } = useAuth()
@@ -25,7 +26,6 @@ export default function Register() {
     else if (form.password.length > 64) errs.password = 'Maximum 64 characters'
     else if (!/[A-Z]/.test(form.password)) errs.password = 'Must contain at least one uppercase letter'
     else if (!/[0-9]/.test(form.password)) errs.password = 'Must contain at least one number'
-    if (form.photoUrl && !/^https?:\/\/.+/.test(form.photoUrl)) errs.photoUrl = 'Enter a valid URL starting with http:// or https://'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -115,12 +115,8 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="form-label">Profile Picture URL <span style={{ color: '#3a3a55', textTransform: 'none' }}>(optional)</span></label>
-            <div style={{ position: 'relative' }}>
-              <FiImage style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#4a4a65', width: 16, height: 16 }} />
-              <input type="url" className="form-input" style={{ paddingLeft: '2.5rem' }} placeholder="https://..." value={form.photoUrl} onChange={field('photoUrl')} />
-            </div>
-            {errors.photoUrl && <p style={{ color: '#ff6b6b', fontSize: '0.75rem', marginTop: '0.3rem' }}>{errors.photoUrl}</p>}
+            <label className="form-label">Profile Picture <span style={{ color: '#3a3a55', textTransform: 'none' }}>(optional)</span></label>
+            <ImageUpload value={form.photoUrl} onChange={url => { setForm(p => ({ ...p, photoUrl: url })); setErrors(p => { const n = { ...p }; delete n.photoUrl; return n }) }} />
           </div>
 
           <div>
