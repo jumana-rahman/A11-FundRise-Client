@@ -17,11 +17,15 @@ export default function Register() {
   const validate = () => {
     const errs: Record<string, string> = {}
     if (!form.name.trim()) errs.name = 'Name is required'
+    else if (form.name.trim().length < 2) errs.name = 'Name must be at least 2 characters'
     if (!form.email) errs.email = 'Email is required'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address'
     if (!form.password) errs.password = 'Password is required'
     else if (form.password.length < 6) errs.password = 'At least 6 characters'
+    else if (form.password.length > 64) errs.password = 'Maximum 64 characters'
     else if (!/[A-Z]/.test(form.password)) errs.password = 'Must contain at least one uppercase letter'
+    else if (!/[0-9]/.test(form.password)) errs.password = 'Must contain at least one number'
+    if (form.photoUrl && !/^https?:\/\/.+/.test(form.photoUrl)) errs.photoUrl = 'Enter a valid URL starting with http:// or https://'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -57,6 +61,7 @@ export default function Register() {
     { label: 'At least 6 characters', met: form.password.length >= 6 },
     { label: 'One uppercase letter', met: /[A-Z]/.test(form.password) },
     { label: 'One number', met: /\d/.test(form.password) },
+    { label: 'One special character', met: /[!@#$%^&*(),.?":{}|<>]/.test(form.password) },
   ]
 
   return (
@@ -115,6 +120,7 @@ export default function Register() {
               <FiImage style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#4a4a65', width: 16, height: 16 }} />
               <input type="url" className="form-input" style={{ paddingLeft: '2.5rem' }} placeholder="https://..." value={form.photoUrl} onChange={field('photoUrl')} />
             </div>
+            {errors.photoUrl && <p style={{ color: '#ff6b6b', fontSize: '0.75rem', marginTop: '0.3rem' }}>{errors.photoUrl}</p>}
           </div>
 
           <div>
