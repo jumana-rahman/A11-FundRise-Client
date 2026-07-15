@@ -1,25 +1,35 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiSearch, FiArrowRight } from 'react-icons/fi'
 import { api } from '../../../lib/api'
+import { CampaignCardSkeleton } from '../../../components/Skeleton'
 
 export default function ExploreCampaigns() {
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [campaigns, setCampaigns] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const debounceTimer = useRef<ReturnType<typeof setTimeout>>()
 
   const categories = ['All', 'Technology', 'Art', 'Community', 'Health']
 
   useEffect(() => {
+    clearTimeout(debounceTimer.current)
+    debounceTimer.current = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(debounceTimer.current)
+  }, [search])
+
+  useEffect(() => {
+    setLoading(true)
     const params = new URLSearchParams()
-    if (search) params.set('search', search)
+    if (debouncedSearch) params.set('search', debouncedSearch)
     if (category !== 'All') params.set('category', category)
     api.get<any[]>(`/api/campaigns?${params.toString()}`)
       .then(res => { setCampaigns(Array.isArray(res) ? res : []); setLoading(false) })
       .catch(() => setLoading(false))
-  }, [search, category])
+  }, [debouncedSearch, category])
 
   return (
     <div>
@@ -43,7 +53,9 @@ export default function ExploreCampaigns() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#5a5a78' }}>Loading campaigns...</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+          {Array.from({ length: 6 }).map((_, i) => <CampaignCardSkeleton key={i} />)}
+        </div>
       ) : campaigns.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: '#5a5a78' }}>No campaigns found matching your filters.</div>
       ) : (
@@ -54,7 +66,7 @@ export default function ExploreCampaigns() {
             return (
               <motion.div key={c._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="campaign-card">
                 <div style={{ position: 'relative', height: 180, overflow: 'hidden' }}>
-                  <img src={c.campaignImageUrl} alt={c.campaignTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={c.campaignImageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&h=400&fit=crop'} alt={c.campaignTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #111118 0%, transparent 50%)' }} />
                   <span style={{ position: 'absolute', top: 10, left: 10, background: '#00d4aa18', border: '1px solid #00d4aa30', color: '#00d4aa', padding: '0.15rem 0.5rem', borderRadius: 99, fontSize: '0.68rem', fontWeight: 600 }}>{c.category}</span>
                 </div>
