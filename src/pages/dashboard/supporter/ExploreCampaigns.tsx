@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { FiSearch, FiArrowRight } from 'react-icons/fi'
 import { api } from '../../../lib/api'
 import { CampaignCardSkeleton } from '../../../components/Skeleton'
+import ImageWithFallback from '../../../components/ImageWithFallback'
 
 export default function ExploreCampaigns() {
   const [search, setSearch] = useState('')
@@ -66,7 +67,7 @@ export default function ExploreCampaigns() {
             return (
               <motion.div key={c._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="campaign-card">
                 <div style={{ position: 'relative', height: 180, overflow: 'hidden' }}>
-                  <img src={c.campaignImageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&h=400&fit=crop'} alt={c.campaignTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <ImageWithFallback src={c.campaignImageUrl} alt={c.campaignTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #111118 0%, transparent 50%)' }} />
                   <span style={{ position: 'absolute', top: 10, left: 10, background: '#00d4aa18', border: '1px solid #00d4aa30', color: '#00d4aa', padding: '0.15rem 0.5rem', borderRadius: 99, fontSize: '0.68rem', fontWeight: 600 }}>{c.category}</span>
                 </div>

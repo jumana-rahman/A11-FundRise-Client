@@ -5,6 +5,7 @@ import { FiCalendar, FiTarget, FiZap, FiUser, FiArrowLeft, FiGift, FiFlag, FiX }
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
 import { api } from '../../../lib/api'
+import ImageWithFallback from '../../../components/ImageWithFallback'
 
 export default function CampaignDetails() {
   const { id } = useParams()
@@ -93,7 +94,7 @@ export default function CampaignDetails() {
         <div>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <div style={{ borderRadius: '1rem', overflow: 'hidden', marginBottom: '1.5rem', position: 'relative' }}>
-              <img src={campaign.campaignImageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=400&fit=crop'} alt={campaign.campaignTitle} style={{ width: '100%', height: 320, objectFit: 'cover' }} />
+              <ImageWithFallback src={campaign.campaignImageUrl} alt={campaign.campaignTitle} style={{ width: '100%', height: 320, objectFit: 'cover' }} />
               <span style={{ position: 'absolute', top: 12, left: 12, background: '#00d4aa18', border: '1px solid #00d4aa40', color: '#00d4aa', padding: '0.25rem 0.75rem', borderRadius: 99, fontSize: '0.75rem', fontWeight: 600 }}>{campaign.category}</span>
             </div>
 

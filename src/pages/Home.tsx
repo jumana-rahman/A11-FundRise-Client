@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules'
 import { FiArrowRight, FiStar, FiUsers, FiTrendingUp, FiDollarSign, FiTarget, FiAward, FiZap, FiPenTool, FiHeart, FiBook, FiGlobe, FiUser, FiSearch, FiCheckCircle, FiLock } from 'react-icons/fi'
 import { api } from '../lib/api'
+import ImageWithFallback from '../components/ImageWithFallback'
 import 'swiper/css'
 import 'swiper/css/pagination'
 import 'swiper/css/effect-fade'
@@ -196,7 +197,7 @@ export default function Home() {
             return (
               <motion.div key={c._id || i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="campaign-card card-glow">
                 <div style={{ position: 'relative', overflow: 'hidden', height: 200 }}>
-                  <img src={c.imageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&h=400&fit=crop'} alt={c.campaignTitle} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }}
+                  <ImageWithFallback src={c.imageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&h=400&fit=crop'} alt={c.campaignTitle} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.4s' }}
                     onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
                     onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                   />
