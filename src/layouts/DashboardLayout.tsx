@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, Link, useNavigate, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
-import { mockNotifications } from '../data/mockData'
+import { api } from '../lib/api'
 
 interface NavItem {
   label: string
@@ -45,6 +45,13 @@ export default function DashboardLayout() {
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+
+  useEffect(() => {
+    api.get<any[]>('/api/notifications')
+      .then(res => setNotifications(Array.isArray(res) ? res : []))
+      .catch(() => {})
+  }, [])
 
   if (!user) {
     navigate('/login')
@@ -52,7 +59,6 @@ export default function DashboardLayout() {
   }
 
   const navItems = user.role === 'supporter' ? supporterNav : user.role === 'creator' ? creatorNav : adminNav
-  const notifications = mockNotifications.filter(n => n.toEmail === user.email)
   const unread = notifications.filter(n => !n.read).length
 
   const handleLogout = () => {
@@ -163,10 +169,10 @@ export default function DashboardLayout() {
                     <div style={{ padding: '0.875rem 1rem', borderBottom: '1px solid #1e1e30', fontFamily: 'Poppins', fontWeight: 600, fontSize: '0.875rem' }}>Notifications</div>
                     {notifications.length === 0 ? (
                       <div style={{ padding: '1.5rem', textAlign: 'center', color: '#5a5a78', fontSize: '0.85rem' }}>All caught up!</div>
-                    ) : notifications.map(n => (
-                      <div key={n.id} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #16162a', background: n.read ? 'transparent' : '#00d4aa05' }}>
+                    ) : notifications.slice(0, 8).map((n: any) => (
+                      <div key={n._id} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #16162a', background: n.read ? 'transparent' : '#00d4aa05' }}>
                         <p style={{ margin: 0, fontSize: '0.78rem', color: n.read ? '#6060a0' : '#c0c0d8', lineHeight: 1.5 }}>{n.message}</p>
-                        <span style={{ fontSize: '0.68rem', color: '#3a3a55' }}>{new Date(n.time).toLocaleDateString()}</span>
+                        <span style={{ fontSize: '0.68rem', color: '#3a3a55' }}>{new Date(n.createdAt).toLocaleDateString()}</span>
                       </div>
                     ))}
                   </motion.div>
