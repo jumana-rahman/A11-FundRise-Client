@@ -90,7 +90,7 @@ export default function CampaignDetails() {
         <FiArrowLeft size={16} /> Back to Campaigns
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: '2rem', alignItems: 'start' }}>
         <div>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <div style={{ borderRadius: '1rem', overflow: 'hidden', marginBottom: '1.5rem', position: 'relative' }}>
