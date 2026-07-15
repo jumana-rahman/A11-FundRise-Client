@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { FiCalendar, FiTarget, FiZap, FiUser, FiArrowLeft, FiGift } from 'react-icons/fi'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FiCalendar, FiTarget, FiZap, FiUser, FiArrowLeft, FiGift, FiFlag, FiX } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
 import { api } from '../../../lib/api'
@@ -14,6 +14,9 @@ export default function CampaignDetails() {
   const [submitting, setSubmitting] = useState(false)
   const [campaign, setCampaign] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showReport, setShowReport] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reporting, setReporting] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -57,6 +60,29 @@ export default function CampaignDetails() {
     setSubmitting(false)
   }
 
+  const handleReport = async () => {
+    if (!reportReason.trim()) {
+      toast.error('Please provide a reason')
+      return
+    }
+    setReporting(true)
+    try {
+      await api.post('/api/reports', {
+        campaignId: campaign._id,
+        campaignTitle: campaign.campaignTitle,
+        creatorEmail: campaign.creatorEmail,
+        creatorName: campaign.creatorName,
+        reason: reportReason,
+      })
+      toast.success('Report submitted. Our team will review it.')
+      setShowReport(false)
+      setReportReason('')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit report')
+    }
+    setReporting(false)
+  }
+
   return (
     <div>
       <button onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: 'none', cursor: 'pointer', color: '#7070a0', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
@@ -67,11 +93,18 @@ export default function CampaignDetails() {
         <div>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
             <div style={{ borderRadius: '1rem', overflow: 'hidden', marginBottom: '1.5rem', position: 'relative' }}>
-              <img src={campaign.campaignImageUrl} alt={campaign.campaignTitle} style={{ width: '100%', height: 320, objectFit: 'cover' }} />
+              <img src={campaign.campaignImageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=400&fit=crop'} alt={campaign.campaignTitle} style={{ width: '100%', height: 320, objectFit: 'cover' }} />
               <span style={{ position: 'absolute', top: 12, left: 12, background: '#00d4aa18', border: '1px solid #00d4aa40', color: '#00d4aa', padding: '0.25rem 0.75rem', borderRadius: 99, fontSize: '0.75rem', fontWeight: 600 }}>{campaign.category}</span>
             </div>
 
-            <h1 style={{ fontFamily: 'Poppins', fontWeight: 800, fontSize: '1.75rem', marginBottom: '0.5rem', lineHeight: 1.3 }}>{campaign.campaignTitle}</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+              <h1 style={{ fontFamily: 'Poppins', fontWeight: 800, fontSize: '1.75rem', lineHeight: 1.3, flex: 1, paddingRight: '1rem' }}>{campaign.campaignTitle}</h1>
+              {user && user.email !== campaign.creatorEmail && (
+                <button onClick={() => setShowReport(true)} style={{ background: '#ff6b6b10', border: '1px solid #ff6b6b30', color: '#ff6b6b', borderRadius: '0.5rem', padding: '0.4rem 0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  <FiFlag size={12} /> Report
+                </button>
+              )}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#7070a0', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
               <FiUser size={14} /> by {campaign.creatorName}
             </div>
@@ -134,6 +167,29 @@ export default function CampaignDetails() {
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showReport && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowReport(false)}
+            style={{ position: 'fixed', inset: 0, background: '#00000090', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
+            <motion.div initial={{ scale: 0.93 }} animate={{ scale: 1 }} exit={{ scale: 0.93 }} onClick={e => e.stopPropagation()}
+              style={{ background: '#13131e', border: '1px solid #2a2a40', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 480 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ff6b6b' }}><FiFlag size={18} /> Report Campaign</h3>
+                <button onClick={() => setShowReport(false)} style={{ background: 'none', border: 'none', color: '#7070a0', cursor: 'pointer' }}><FiX size={20} /></button>
+              </div>
+              <p style={{ color: '#7070a0', fontSize: '0.85rem', marginBottom: '1rem' }}>Why are you reporting <strong style={{ color: '#e8e8f0' }}>{campaign.campaignTitle}</strong>?</p>
+              <textarea className="form-input" rows={4} placeholder="Describe the issue (e.g., fraudulent campaign, misleading information, inappropriate content)..." value={reportReason} onChange={e => setReportReason(e.target.value)} style={{ resize: 'vertical', marginBottom: '1.25rem' }} />
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button onClick={handleReport} disabled={reporting} style={{ flex: 1, background: '#ff6b6b', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.65rem', fontWeight: 600, cursor: 'pointer', fontSize: '0.875rem' }}>
+                  {reporting ? 'Submitting...' : 'Submit Report'}
+                </button>
+                <button onClick={() => setShowReport(false)} className="btn-outline" style={{ flex: 1 }}>Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
