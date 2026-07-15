@@ -1,102 +1,137 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, type ReactNode } from "react";
+import { authClient, useSession } from "../lib/auth-client";
+import type { UserRole } from "../data/mockData";
 
-export type UserRole = 'supporter' | 'creator' | 'admin'
+export type { UserRole };
 
 export interface User {
-  id: string
-  name: string
-  email: string
-  photoUrl: string
-  role: UserRole
-  credits: number
+  id: string;
+  name: string;
+  email: string;
+  photoUrl: string;
+  role: UserRole;
+  credits: number;
 }
 
 interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  loginWithGoogle: () => Promise<{ success: boolean }>
-  register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>
-  logout: () => void
-  updateCredits: (amount: number) => void
-  updateUser: (updates: Partial<User>) => void
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+  register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  updateCredits: (amount: number) => void;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 interface RegisterData {
-  name: string
-  email: string
-  password: string
-  photoUrl?: string
-  role: UserRole
+  name: string;
+  email: string;
+  password: string;
+  photoUrl?: string;
+  role: UserRole;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null)
-
-const MOCK_USERS: User[] = [
-  { id: '1', name: 'Admin User', email: 'admin@fundrise.io', photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop', role: 'admin', credits: 1000 },
-  { id: '2', name: 'Alex Rivera', email: 'creator@fundrise.io', photoUrl: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&h=100&fit=crop', role: 'creator', credits: 20 },
-  { id: '3', name: 'Jordan Kim', email: 'supporter@fundrise.io', photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', role: 'supporter', credits: 50 },
-]
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    const stored = localStorage.getItem('fundrise_user')
-    return stored ? JSON.parse(stored) : null
-  })
+  const { data: session, isPending, refetch } = useSession();
 
-  useEffect(() => {
-    if (user) localStorage.setItem('fundrise_user', JSON.stringify(user))
-    else localStorage.removeItem('fundrise_user')
-  }, [user])
+  const user: User | null = session?.user
+    ? {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        photoUrl: (session.user as any).photoUrl ?? "",
+        role: (session.user as any).role ?? "supporter",
+        credits: (session.user as any).credits ?? 0,
+      }
+    : null;
 
   const login = async (email: string, password: string) => {
-    const found = MOCK_USERS.find(u => u.email === email)
-    if (!found) return { success: false, error: 'No account found with this email.' }
-    if (password.length < 6) return { success: false, error: 'Invalid password.' }
-    setUser(found)
-    return { success: true }
-  }
+    try {
+      const result = await authClient.signIn.email({
+        email,
+        password,
+      });
+      if (result.error) {
+        return { success: false, error: result.error.message ?? "Login failed" };
+      }
+      await refetch();
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message ?? "Login failed" };
+    }
+  };
 
   const loginWithGoogle = async () => {
-    setUser(MOCK_USERS[2])
-    return { success: true }
-  }
+    try {
+      const result = await authClient.signIn.social({
+        provider: "google",
+      });
+      if (result.error) {
+        return { success: false, error: result.error.message ?? "Google sign-in failed" };
+      }
+      await refetch();
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message ?? "Google sign-in failed" };
+    }
+  };
 
   const register = async (data: RegisterData) => {
-    if (MOCK_USERS.find(u => u.email === data.email)) {
-      return { success: false, error: 'Email already in use.' }
+    try {
+      const result = await authClient.signUp.email({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        image: data.photoUrl ?? "",
+      });
+      if (result.error) {
+        return { success: false, error: result.error.message ?? "Registration failed" };
+      }
+      await refetch();
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message ?? "Registration failed" };
     }
-    const newUser: User = {
-      id: Date.now().toString(),
-      name: data.name,
-      email: data.email,
-      photoUrl: data.photoUrl || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop`,
-      role: data.role,
-      credits: data.role === 'supporter' ? 50 : 20,
-    }
-    MOCK_USERS.push(newUser)
-    setUser(newUser)
-    return { success: true }
-  }
+  };
 
-  const logout = () => setUser(null)
+  const logout = async () => {
+    await authClient.signOut();
+    await refetch();
+  };
 
   const updateCredits = (amount: number) => {
-    setUser(prev => prev ? { ...prev, credits: prev.credits + amount } : null)
-  }
+    // Re-fetch session to get updated credits
+    refetch();
+  };
 
-  const updateUser = (updates: Partial<User>) => {
-    setUser(prev => prev ? { ...prev, ...updates } : null)
-  }
+  const updateUser = (_updates: Partial<User>) => {
+    // Re-fetch session to get updated user data
+    refetch();
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, loginWithGoogle, register, logout, updateCredits, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading: isPending,
+        login,
+        loginWithGoogle,
+        register,
+        logout,
+        updateCredits,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
-  return ctx
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }
