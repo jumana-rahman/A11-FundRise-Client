@@ -18,6 +18,7 @@ export default function CampaignDetails() {
   const [showReport, setShowReport] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [reporting, setReporting] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -43,7 +44,13 @@ export default function CampaignDetails() {
       toast.error('Insufficient credits. Please purchase more.')
       return
     }
+    setShowConfirm(true)
+  }
+
+  const confirmContribute = async () => {
+    const num = parseInt(amount)
     setSubmitting(true)
+    setShowConfirm(false)
     try {
       await api.post('/api/contributions', {
         campaignId: campaign._id,
@@ -168,6 +175,39 @@ export default function CampaignDetails() {
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showConfirm && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowConfirm(false)}
+            style={{ position: 'fixed', inset: 0, background: '#00000090', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
+            <motion.div initial={{ scale: 0.93 }} animate={{ scale: 1 }} exit={{ scale: 0.93 }} onClick={e => e.stopPropagation()}
+              style={{ background: '#13131e', border: '1px solid #2a2a40', borderRadius: '1rem', padding: '2rem', width: '100%', maxWidth: 400 }}>
+              <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1rem', textAlign: 'center' }}>Confirm Contribution</h3>
+              <div style={{ background: '#0e0e18', borderRadius: '0.625rem', padding: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#7070a0', fontSize: '0.85rem' }}>Campaign</span>
+                  <span style={{ color: '#e8e8f0', fontSize: '0.85rem', fontWeight: 500, maxWidth: '60%', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{campaign.campaignTitle}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#7070a0', fontSize: '0.85rem' }}>Amount</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', color: '#00d4aa', fontWeight: 700 }}>{amount} credits</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#7070a0', fontSize: '0.85rem' }}>Creator</span>
+                  <span style={{ color: '#e8e8f0', fontSize: '0.85rem' }}>{campaign.creatorName}</span>
+                </div>
+              </div>
+              <p style={{ color: '#5a5a78', fontSize: '0.78rem', textAlign: 'center', marginBottom: '1.25rem' }}>This contribution will be held pending until the creator reviews it.</p>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button onClick={confirmContribute} disabled={submitting} className="btn-primary" style={{ flex: 1 }}>
+                  {submitting ? 'Submitting...' : 'Confirm'}
+                </button>
+                <button onClick={() => setShowConfirm(false)} className="btn-outline" style={{ flex: 1 }}>Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showReport && (
