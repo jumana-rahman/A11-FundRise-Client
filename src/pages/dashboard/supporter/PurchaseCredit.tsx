@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FiZap, FiCheck, FiStar, FiLoader, FiCreditCard } from 'react-icons/fi'
+import { FiZap, FiCheck, FiStar, FiLoader, FiCreditCard, FiCheckCircle } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../../context/AuthContext'
 import { api } from '../../../lib/api'
@@ -13,24 +14,79 @@ const packages = [
 ]
 
 export default function PurchaseCredit() {
-  const { user, updateCredits } = useAuth()
+  const { user, updateCredits, refreshUser } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [selected, setSelected] = useState<number | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [verifying, setVerifying] = useState(false)
+  const [verified, setVerified] = useState(false)
+
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id')
+    const cancelled = searchParams.get('cancelled')
+
+    if (cancelled) {
+      toast.error('Payment cancelled')
+      setSearchParams({})
+    }
+
+    if (sessionId) {
+      setVerifying(true)
+      api.post('/api/payments/verify-session', { sessionId })
+        .then(async (res: any) => {
+          setVerified(true)
+          updateCredits(res.credits)
+          await refreshUser()
+          toast.success(`${res.credits} credits added to your account!`)
+          setSearchParams({})
+        })
+        .catch((err: any) => {
+          toast.error(err.message || 'Payment verification failed')
+          setSearchParams({})
+        })
+        .finally(() => setVerifying(false))
+    }
+  }, [searchParams])
 
   const handlePurchase = async () => {
     if (selected === null) { toast.error('Select a package first'); return }
     const pkg = packages[selected]
     setProcessing(true)
     try {
-      await api.post('/api/users/credits', { amount: pkg.credits })
-      await api.post('/api/payments', { credits: pkg.credits, amount: pkg.price, method: 'Stripe' })
-      updateCredits(pkg.credits)
-      toast.success(`${pkg.credits} credits added to your account!`)
-      setSelected(null)
+      const res = await api.post<any>('/api/payments/create-checkout-session', { credits: pkg.credits })
+      if (res.url) {
+        window.location.href = res.url
+      } else {
+        toast.error('Failed to create checkout session')
+      }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to purchase credits')
+      toast.error(err.message || 'Failed to start checkout')
+      setProcessing(false)
     }
-    setProcessing(false)
+  }
+
+  if (verifying) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem', gap: '1rem' }}>
+        <FiLoader size={32} className="animate-spin" style={{ color: '#00d4aa' }} />
+        <p style={{ color: '#6060a0', fontSize: '0.9rem' }}>Verifying your payment...</p>
+      </div>
+    )
+  }
+
+  if (verified) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem', gap: '1rem' }}>
+        <FiCheckCircle size={48} style={{ color: '#00d4aa' }} />
+        <h2 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1.5rem' }}>Payment Successful!</h2>
+        <p style={{ color: '#6060a0', fontSize: '0.9rem' }}>Your credits have been added to your account.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#0e1e1a', border: '1px solid #00d4aa30', borderRadius: '0.625rem', padding: '0.75rem 1.25rem' }}>
+          <FiZap size={18} style={{ color: '#00d4aa' }} />
+          <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 700, fontSize: '1.25rem', color: '#00d4aa' }}>{user?.credits ?? 0}</span>
+          <span style={{ color: '#5a5a78' }}>credits</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -86,22 +142,17 @@ export default function PurchaseCredit() {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '1.5rem', maxWidth: 480 }}>
           <h3 style={{ fontFamily: 'Poppins', fontWeight: 700, fontSize: '1rem', marginBottom: '1.25rem' }}>
-            Complete Purchase - {packages[selected].credits} credits for ${packages[selected].price}
+            Purchase {packages[selected].credits} credits for ${packages[selected].price}
           </h3>
 
-          <div style={{ background: '#0a0a12', border: '1px solid #2a2a40', borderRadius: '0.625rem', padding: '1rem', marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '0.75rem', color: '#5a5a78', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Stripe Payment (Demo)</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 50px', gap: '0.5rem' }}>
-              <input className="form-input" placeholder="4242 4242 4242 4242" defaultValue="4242 4242 4242 4242" readOnly style={{ fontFamily: 'JetBrains Mono', fontSize: '0.85rem' }} />
-              <input className="form-input" placeholder="MM/YY" defaultValue="12/28" readOnly style={{ fontFamily: 'JetBrains Mono', fontSize: '0.85rem' }} />
-              <input className="form-input" placeholder="CVC" defaultValue="123" readOnly style={{ fontFamily: 'JetBrains Mono', fontSize: '0.85rem' }} />
-            </div>
-          </div>
-
           <button onClick={handlePurchase} disabled={processing} className="btn-primary" style={{ width: '100%', padding: '0.875rem', fontSize: '0.95rem', opacity: processing ? 0.7 : 1 }}>
-            {processing ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiLoader size={14} className="animate-spin" /> Processing payment...</span> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiCreditCard size={14} /> Pay ${packages[selected].price} via Stripe</span>}
+            {processing ? (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiLoader size={14} className="animate-spin" /> Redirecting to Stripe...</span>
+            ) : (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><FiCreditCard size={14} /> Pay ${packages[selected].price} via Stripe</span>
+            )}
           </button>
-          <p style={{ fontSize: '0.72rem', color: '#3a3a55', textAlign: 'center', marginTop: '0.625rem' }}>Secured by Stripe. Test mode active.</p>
+          <p style={{ fontSize: '0.72rem', color: '#3a3a55', textAlign: 'center', marginTop: '0.625rem' }}>Secured by Stripe. You'll be redirected to Stripe Checkout.</p>
         </motion.div>
       )}
     </div>
