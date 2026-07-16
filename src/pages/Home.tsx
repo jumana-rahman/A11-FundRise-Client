@@ -226,7 +226,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <Link to={`/explore/${c._id}`} className="btn-outline" style={{ textDecoration: 'none', display: 'block', textAlign: 'center', width: '100%' }}>
+                  <Link to="/login" className="btn-outline" style={{ textDecoration: 'none', display: 'block', textAlign: 'center', width: '100%' }}>
                     View Campaign
                   </Link>
                 </div>

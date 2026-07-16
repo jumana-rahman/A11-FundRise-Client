@@ -56,7 +56,7 @@ export default function Navbar() {
             <>
               <Link to="/login" style={{ color: '#9090b0', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, padding: '0.5rem 1rem' }}>Login</Link>
               <Link to="/register" className="btn-primary" style={{ textDecoration: 'none' }}>Register</Link>
-              <a href="https://github.com" target="_blank" rel="noreferrer" style={{ color: '#7070a0', textDecoration: 'none', fontSize: '0.8rem', padding: '0.4rem 0.8rem', border: '1px solid #2a2a40', borderRadius: '0.5rem' }}>Join as Dev</a>
+              <a href="https://github.com/jumana-rahman/A11-FundRise-Client" target="_blank" rel="noreferrer" style={{ color: '#7070a0', textDecoration: 'none', fontSize: '0.8rem', padding: '0.4rem 0.8rem', border: '1px solid #2a2a40', borderRadius: '0.5rem' }}>Join as Dev</a>
             </>
           ) : (
             <>
@@ -113,7 +113,7 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
 
-              <a href="https://github.com" target="_blank" rel="noreferrer" style={{ color: '#7070a0', textDecoration: 'none', fontSize: '0.8rem', padding: '0.4rem 0.8rem', border: '1px solid #2a2a40', borderRadius: '0.5rem' }}>Join as Dev</a>
+              <a href="https://github.com/jumana-rahman/A11-FundRise-Client" target="_blank" rel="noreferrer" style={{ color: '#7070a0', textDecoration: 'none', fontSize: '0.8rem', padding: '0.4rem 0.8rem', border: '1px solid #2a2a40', borderRadius: '0.5rem' }}>Join as Dev</a>
             </>
           )}
         </div>
