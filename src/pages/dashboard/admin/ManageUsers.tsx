@@ -70,7 +70,7 @@ export default function ManageUsers() {
                     <tr key={u._id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <img src={u.photoUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                          <img src={u.photoUrl || u.image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
                           <span style={{ fontWeight: 500, color: '#e8e8f0' }}>{u.name}</span>
                         </div>
                       </td>
@@ -142,7 +142,7 @@ export default function ManageUsers() {
                 {/* User card */}
                 <div style={{ marginTop: '1rem', background: '#0e0e18', border: '1px solid #1e1e30', borderRadius: '0.75rem', padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
                   <img
-                    src={deleteTarget.photoUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'}
+                    src={deleteTarget.photoUrl || deleteTarget.image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'}
                     alt=""
                     style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid #ff6b6b30' }}
                   />
