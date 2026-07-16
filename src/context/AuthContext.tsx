@@ -82,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: result.error.message ?? "Login failed" };
       }
       await refetch();
+      await fetchJWT();
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message ?? "Login failed" };
@@ -95,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: result.error.message ?? "Google sign-in failed" };
       }
       await refetch();
+      await fetchJWT();
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message ?? "Google sign-in failed" };
@@ -113,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: result.error.message ?? "Registration failed" };
       }
       await refetch();
+      await fetchJWT();
       try {
         await api.post("/api/auth/register-credits", { role: data.role });
       } catch {
@@ -147,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        loading: isPending || (session?.user ? jwtLoading : false),
+        loading: isPending || (!!session?.user && !jwtUser),
         login,
         loginWithGoogle,
         register,
