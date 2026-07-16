@@ -38,8 +38,10 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, isPending, refetch } = useSession();
   const [jwtUser, setJwtUser] = useState<User | null>(null);
+  const [jwtLoading, setJwtLoading] = useState(false);
 
   const fetchJWT = useCallback(async () => {
+    setJwtLoading(true);
     try {
       const res = await api.post<{ token: string }>("/api/auth/jwt");
       if (res.token) {
@@ -57,6 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       localStorage.removeItem("fundrise_token");
       setJwtUser(null);
+    } finally {
+      setJwtLoading(false);
     }
   }, []);
 
@@ -109,7 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: result.error.message ?? "Registration failed" };
       }
       await refetch();
-      await api.post("/api/auth/register-credits", { role: data.role });
+      try {
+        await api.post("/api/auth/register-credits", { role: data.role });
+      } catch {
+        // register-credits may fail if cookie isn't propagated yet — user still gets credits on next login via session
+      }
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message ?? "Registration failed" };
@@ -139,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        loading: isPending,
+        loading: isPending || (session?.user ? jwtLoading : false),
         login,
         loginWithGoogle,
         register,

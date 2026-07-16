@@ -59,6 +59,7 @@ async function request<T>(
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers,
+    credentials: "include",
   });
 
   // Handle auth errors globally before parsing body
