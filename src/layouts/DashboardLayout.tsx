@@ -53,16 +53,13 @@ export default function DashboardLayout() {
       .catch(() => {})
   }, [])
 
-  if (!user) {
-    navigate('/login')
-    return null
-  }
+  if (!user) return null
 
   const navItems = user.role === 'supporter' ? supporterNav : user.role === 'creator' ? creatorNav : adminNav
   const unread = notifications.filter(n => !n.read).length
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     toast.success('Logged out')
     navigate('/')
   }

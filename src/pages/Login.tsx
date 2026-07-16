@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiMail, FiLock, FiEye, FiEyeOff, FiZap } from 'react-icons/fi'
 import { FcGoogle } from 'react-icons/fc'
@@ -9,9 +9,6 @@ import { useAuth } from '../context/AuthContext'
 export default function Login() {
   const { login, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
-  // Redirect back to where the user was trying to go (if any)
-  const redirectTo = (location.state as any)?.from || '/dashboard'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -36,7 +33,7 @@ export default function Login() {
     setLoading(false)
     if (result.success) {
       toast.success('Welcome back!')
-      navigate(redirectTo)
+      navigate('/dashboard')
     } else {
       toast.error(result.error || 'Login failed')
     }

@@ -3,8 +3,10 @@ import { motion } from 'framer-motion'
 import { FiDollarSign, FiZap } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { api } from '../../../lib/api'
+import { useAuth } from '../../../context/AuthContext'
 
 export default function Withdrawals() {
+  const { user } = useAuth()
   const [earnings, setEarnings] = useState({ totalRaised: 0, withdrawalAmount: 0 })
   const [form, setForm] = useState({ withdrawalCredit: '', paymentSystem: 'Stripe', accountNumber: '' })
   const [loading, setLoading] = useState(false)
@@ -45,24 +47,39 @@ export default function Withdrawals() {
         <p style={{ color: '#6060a0', fontSize: '0.875rem' }}>Request withdrawals for your raised credits. 20 credits = $1</p>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-        style={{ background: 'linear-gradient(135deg, #0e1e1a, #0a1420)', border: '1px solid #00d4aa20', borderRadius: '1rem', padding: '1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Total Raised</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          style={{ background: 'linear-gradient(135deg, #0e1e1a, #0a1420)', border: '1px solid #00d4aa20', borderRadius: '1rem', padding: '1.5rem' }}>
+          <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Your Credit Balance</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiZap size={24} style={{ color: '#00d4aa' }} />
+            <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 800, fontSize: '2rem', color: '#00d4aa' }}>{(user?.credits ?? 0).toLocaleString()}</span>
+            <span style={{ color: '#5a5a78' }}>credits</span>
+          </div>
+          <p style={{ color: '#3a3a55', fontSize: '0.72rem', marginTop: '0.375rem' }}>Spending credits for contributions</p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+          style={{ background: 'linear-gradient(135deg, #1e1a0e, #1a1408)', border: '1px solid #ffd93d20', borderRadius: '1rem', padding: '1.5rem' }}>
+          <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Total Raised from Campaigns</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FiZap size={24} style={{ color: '#ffd93d' }} />
             <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 800, fontSize: '2rem', color: '#ffd93d' }}>{earnings.totalRaised.toLocaleString()}</span>
             <span style={{ color: '#5a5a78' }}>credits</span>
           </div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
+          <p style={{ color: '#3a3a55', fontSize: '0.72rem', marginTop: '0.375rem' }}>Withdrawable at 20 credits = $1</p>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          style={{ background: 'linear-gradient(135deg, #0e1e1a, #0a1420)', border: '1px solid #00d4aa20', borderRadius: '1rem', padding: '1.5rem' }}>
           <p style={{ color: '#6060a0', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Available for Withdrawal</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FiDollarSign size={24} style={{ color: '#00d4aa' }} />
             <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 800, fontSize: '2rem', color: '#00d4aa' }}>${earnings.withdrawalAmount.toFixed(2)}</span>
           </div>
-        </div>
-      </motion.div>
+          <p style={{ color: '#3a3a55', fontSize: '0.72rem', marginTop: '0.375rem' }}>Min. withdrawal: 200 credits ($10)</p>
+        </motion.div>
+      </div>
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         style={{ background: '#111118', border: '1px solid #1e1e30', borderRadius: '1rem', padding: '1.5rem', maxWidth: 520 }}>

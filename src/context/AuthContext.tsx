@@ -128,9 +128,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await authClient.signOut();
     localStorage.removeItem("fundrise_token");
     setJwtUser(null);
+    await authClient.signOut();
     await refetch();
   };
 
