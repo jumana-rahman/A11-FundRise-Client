@@ -4,6 +4,45 @@ function getToken(): string | null {
   return localStorage.getItem("fundrise_token");
 }
 
+/**
+ * Custom error class that carries the HTTP status code.
+ * Components can check `error.status` to decide how to handle errors.
+ */
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+/**
+ * Handles 401 and 403 responses globally.
+ * - 401 (Unauthorized): Token expired or invalid → clear token, redirect to login
+ * - 403 (Forbidden): User doesn't have the required role → redirect to /forbidden
+ *
+ * This is called by the request() function when the server returns 401 or 403.
+ * Individual pages can still catch ApiError and handle it locally if needed.
+ */
+function handleAuthError(status: number): never {
+  // Only redirect if we're in a browser context
+  if (typeof window !== "undefined") {
+    if (status === 401) {
+      // Clear stale token
+      localStorage.removeItem("fundrise_token");
+      // Redirect to unauthorized page (not login, to show the proper 401 page)
+      window.location.href = "/unauthorized";
+    } else if (status === 403) {
+      window.location.href = "/forbidden";
+    }
+  }
+  throw new ApiError(
+    status === 401 ? "Authentication required" : "Insufficient permissions",
+    status
+  );
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {}
@@ -22,6 +61,14 @@ async function request<T>(
     headers,
   });
 
+  // Handle auth errors globally before parsing body
+  if (res.status === 401) {
+    handleAuthError(401);
+  }
+  if (res.status === 403) {
+    handleAuthError(403);
+  }
+
   const text = await res.text();
   let data: any;
   try {
@@ -31,7 +78,7 @@ async function request<T>(
   }
 
   if (!res.ok) {
-    throw new Error(data?.error || `Request failed (${res.status})`);
+    throw new ApiError(data?.error || `Request failed (${res.status})`, res.status);
   }
   return data as T;
 }

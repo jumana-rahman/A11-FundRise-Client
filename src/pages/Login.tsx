@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiMail, FiLock, FiEye, FiEyeOff, FiZap } from 'react-icons/fi'
 import { FcGoogle } from 'react-icons/fc'
@@ -9,6 +9,9 @@ import { useAuth } from '../context/AuthContext'
 export default function Login() {
   const { login, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  // Redirect back to where the user was trying to go (if any)
+  const redirectTo = (location.state as any)?.from || '/dashboard'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -33,7 +36,7 @@ export default function Login() {
     setLoading(false)
     if (result.success) {
       toast.success('Welcome back!')
-      navigate('/dashboard')
+      navigate(redirectTo)
     } else {
       toast.error(result.error || 'Login failed')
     }
@@ -74,9 +77,9 @@ export default function Login() {
         <div style={{ background: '#00d4aa08', border: '1px solid #00d4aa20', borderRadius: '0.625rem', padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.8rem', color: '#7070a0' }}>
           <strong style={{ color: '#00d4aa' }}>Demo accounts:</strong>
           <div style={{ marginTop: '0.3rem', fontFamily: 'JetBrains Mono', fontSize: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-            <span>admin@fundrise.io / anypass</span>
-            <span>creator@fundrise.io / anypass</span>
-            <span>supporter@fundrise.io / anypass</span>
+            <span>admin@fundrise.com / Admin@1234!</span>
+            <span>alex@test.com / Pass1234!</span>
+            <span>sarah@test.com / Pass1234!</span>
           </div>
         </div>
 
